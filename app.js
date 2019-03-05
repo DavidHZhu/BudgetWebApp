@@ -65,6 +65,25 @@ var budgetController = (function() {
         return newItem;
     },
 
+    deleteItem: function (type, id) {
+      var ids, index;
+
+      // map is a callback function which can take up to 3 args: current, index and array, and returns an array
+      ids = data.allItems[type].map(function (current) {
+        return current.id;
+      });
+      
+      // Finds element index for the ID of the income/expense
+      index = ids.indexOf(id)
+
+      // Deletes items from array
+      if (index !== -1 ) {
+        // Goes to index and removes specified number of elements to delete (1)
+        data.allItems[type].splice(index, 1);
+      }
+
+    },
+
     // Calculates total income and expenses
     calculateBudget: function () {
       // Totals for expenses and income
@@ -87,6 +106,10 @@ var budgetController = (function() {
         totalExp: data.totals.exp,
         percentage: data.percentage,
       };
+    },
+
+    testing: function () {
+      console.log(data);
     }
   };
 
@@ -105,7 +128,8 @@ var UIController = (function() {
     budgetLabel: '.budget__value',
     incomeLabel: '.budget__income--value',
     expensesLabel: '.budget__expenses--value',
-    percentageLabel: '.budget__expenses--percentage'
+    percentageLabel: '.budget__expenses--percentage',
+    container: '.container'
   };
 
   // Gets input from text field (public) -> returns a public function that is an object containing three variables
@@ -125,10 +149,10 @@ var UIController = (function() {
       // Create HTML string with placeholder text
       if (type === 'inc') {
         element = DOMstrings.incomeContainer;
-        html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+        html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
       } else if (type === 'exp') {
         element = DOMstrings.expensesContainer;
-        html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+        html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
       }
 
       // Replace placeholder text with user input
@@ -195,6 +219,10 @@ var controller = (function(budgetCtrl, UICtrl) {
         ctrlAddItem();
       }
     });
+
+    // Event Handler - Similar to ctrlAddItem (callback function). DOM.container holds both Income and Expenses
+    document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+
   };
 
   // Private function
@@ -225,6 +253,27 @@ var controller = (function(budgetCtrl, UICtrl) {
       UICtrl.clearFields();
       // Update budget
       updateBudget();
+    }
+  };
+
+  // Standalone function (private)
+  var ctrlDeleteItem = function (event) {
+
+    var itemID, splitID, type, ID;    
+    // .parentNode moves up one parent in the HTML elements (DOM traversing) HARD CODED
+    itemID = (event.target.parentNode.parentNode.parentNode.parentNode.id);
+
+    // All other Html elements have no ID
+    if (itemID) {
+
+      // Splits the array where it finds '-' (example: inc-3 will return ["inc", "3"], same for exp)
+      splitID = itemID.split('-');
+      type = splitID[0];
+      ID = parseInt(splitID[1]);
+
+      // Delete the item from the data structure
+      budgetController.deleteItem(type, ID);
+
     }
   };
 
