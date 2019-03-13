@@ -143,6 +143,7 @@ var UIController = (function() {
       };
     },
 
+    // Add the HTML into the DOM
     addListItem: function (obj, type) {
       var html, newHtml, element;
 
@@ -162,6 +163,13 @@ var UIController = (function() {
 
       // Insert the HTML into the DOM
       document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
+
+    },
+
+    // Deletes the HTML from the DOM
+    deleteListItem: function (selectorID) {
+      var element = document.getElementById(selectorID);
+      element.parentNode.removeChild(element);
 
     },
 
@@ -207,13 +215,12 @@ var controller = (function(budgetCtrl, UICtrl) {
 
   // Private function to check if input is entered
   var setupEventListeners = function () {
-
     var DOM = UICtrl.getDOMstrings();
 
     // Event Handler - NOTE: there is no function braces () around ctrlAddItem since we don't call it there. Instead, it is a callback that will be called by addEventListener.
     document.querySelector(DOM.inputButton).addEventListener("click", ctrlAddItem);
 
-    // Keypress happens on the entire page
+    // Keypress happens on the entire page -> adds item to controller
     document.addEventListener("keypress", function(event) {
       if (event.keyCode === 13 || event.key === "Enter") {
         ctrlAddItem();
@@ -238,7 +245,6 @@ var controller = (function(budgetCtrl, UICtrl) {
 
   // Standalone function (private)
   var ctrlAddItem = function() {
-
     var input, newItem;
 
     // Get input data from field
@@ -258,7 +264,6 @@ var controller = (function(budgetCtrl, UICtrl) {
 
   // Standalone function (private)
   var ctrlDeleteItem = function (event) {
-
     var itemID, splitID, type, ID;    
     // .parentNode moves up one parent in the HTML elements (DOM traversing) HARD CODED
     itemID = (event.target.parentNode.parentNode.parentNode.parentNode.id);
@@ -273,11 +278,16 @@ var controller = (function(budgetCtrl, UICtrl) {
 
       // Delete the item from the data structure
       budgetController.deleteItem(type, ID);
+      // Delete the item from the UI
+      UIController.deleteListItem(itemID);
+      // Update budget
+      updateBudget();
 
     }
   };
 
   return {
+    // Initializes empty data structure
     init: function() {
       console.log("init")
       UICtrl.displayBudget({
